@@ -1,0 +1,73 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Circle | phina.js</title>
+  </head>
+  <body>
+  </body>
+</html>
+
+<script src='phina.min.js'></script>
+<script>
+
+phina.globalize();
+
+var ENEMY_CIRCLE_RADIUS = 32;
+var ENEMY_SPEED = 3;
+
+/*
+ * 敵クラス
+ */
+phina.define('Enemy', {
+  superClass: 'CircleShape',
+
+  init: function() {
+    this.superInit({
+      radius: ENEMY_CIRCLE_RADIUS, // 半径
+    });
+    this.vy = ENEMY_SPEED;
+  },
+
+  update: function() {
+    this.y += this.vy;
+  },
+});
+
+/*
+ * メインシーン
+ */
+phina.define("MainScene", {
+  superClass: 'DisplayScene',
+
+  // 初期化
+  init: function() {
+    this.superInit();
+    this.backgroundColor = '#222';
+  },
+
+  // update
+  update: function(app) {
+    if ((app.frame % 60) < 1) {
+      this.addEnemy(Math.randint(0, 640), 0);
+    }
+  },
+
+  // 敵を追加
+  addEnemy: function(x, y) {
+    var enemy = Enemy().addChildTo(this);
+    enemy.setPosition(x, y);
+  },
+});
+
+phina.main(function() {
+  var app = GameApp({
+    startLabel: 'main', // MainScene から開始
+  });
+  app.enableStats();
+  app.fps = 60;
+  app.run();
+});
+
+</script>

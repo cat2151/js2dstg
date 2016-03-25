@@ -1,0 +1,85 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Circle | phina.js</title>
+  </head>
+  <body>
+  </body>
+</html>
+
+<script src='phina.min.js'></script>
+<script>
+
+phina.globalize();
+
+/*
+ * 自機クラス
+ */
+phina.define('Player', {
+  superClass: 'RectangleShape',
+
+  init: function(t) {
+    this.superInit();
+    this.fill = 'yellow'; // 塗りつぶし色を変更
+    this.x = t.gridX.center();
+    this.y = t.gridY.center();
+    this.width = 64;
+    this.height = 64;
+  },
+
+  update: function() {
+  },
+});
+
+phina.define('MainScene', {
+  superClass: 'CanvasScene',
+  
+  init: function() {
+    this.superInit();
+    this.backgroundColor = '#222';
+
+    // 自機を初期化
+    var rect = Player(this).addChildTo(this);
+    // 自機として登録
+    this.player = rect;
+  },
+  
+  update: function(app) {
+    var keyboard = app.keyboard;
+    app.gamepadManager.update();
+    var gamepad = app.gamepadManager.get();
+    this.movePlayer(keyboard, gamepad);
+  },
+
+  movePlayer: function(keyboard, gamepad) {
+    // 左右移動
+    if (keyboard.getKey('left') || gamepad.getKey('right')) {
+      this.player.x -= 24;
+      this.player.scale.x = 1;
+    }
+    if (keyboard.getKey('right') || gamepad.getKey('down')) {
+      this.player.x += 24;
+      this.player.scale.x = -1;
+    }
+    // 上下移動
+    if (keyboard.getKey('up') || gamepad.getKey('up')) {
+      this.player.y -= 24;
+    }
+    if (keyboard.getKey('down') || gamepad.getKey('left')) {
+      this.player.y += 24;
+    }
+  }
+});
+
+phina.main(function() {
+  var app = GameApp({
+    startLabel: 'main'
+  });
+  app.enableStats();
+  app.fps = 60;
+  app.gamepadManager = phina.input.GamepadManager();
+  app.run();
+});
+</script>

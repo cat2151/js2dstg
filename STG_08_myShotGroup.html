@@ -1,0 +1,76 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Circle | phina.js</title>
+  </head>
+  <body>
+  </body>
+</html>
+
+<script src='phina.min.js'></script>
+<script>
+
+phina.globalize();
+
+var MY_SHOT_CIRCLE_RADIUS = 16;
+var MY_SHOT_SPEED = 32;
+
+/*
+ * 自機弾クラス
+ */
+phina.define('MyShot', {
+  superClass: 'CircleShape',
+
+  init: function(color) {
+    this.superInit({
+      radius: MY_SHOT_CIRCLE_RADIUS, // 半径
+    });
+    this.vy = MY_SHOT_SPEED;
+  },
+
+  update: function() {
+    this.y -= this.vy;
+  },
+});
+
+
+/*
+ * メインシーン
+ */
+phina.define("MainScene", {
+  superClass: 'DisplayScene',
+
+  // 初期化
+  init: function() {
+    this.superInit();
+    this.backgroundColor = '#222';
+    // 自機弾グループを追加
+    this.myShotGroup = DisplayElement().addChildTo(this);
+  },
+
+  // タッチイベント
+  onpointmove: function(e) {
+    var p = e.pointer;
+    this.addMyShot(p.x, p.y);
+  },
+
+  // 自機弾を追加
+  addMyShot: function(x, y) {
+    var color = "hsla({0}, 75%, 50%, 0.75)".format(Math.randint(0, 360));
+    var myShot = MyShot(color).addChildTo(this.myShotGroup);
+    myShot.setPosition(x, y);
+  },
+});
+
+phina.main(function() {
+  var app = GameApp({
+    startLabel: 'main', // MainScene から開始
+  });
+  app.enableStats();
+  app.fps = 60;
+  app.run();
+});
+
+</script>

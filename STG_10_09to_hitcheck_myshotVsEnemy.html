@@ -1,0 +1,197 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Circle | phina.js</title>
+  </head>
+  <body>
+  </body>
+</html>
+
+<script src='phina.min.js'></script>
+<script>
+
+phina.globalize();
+
+var MY_SHOT_CIRCLE_RADIUS = 16;
+var MY_SHOT_SPEED = 32;
+var ENEMY_CIRCLE_RADIUS = 32;
+var ENEMY_SPEED = 3;
+var BULLET_CIRCLE_RADIUS = 16;
+var BULLET_SPEED = 6;
+
+/*
+ * 自機クラス
+ */
+phina.define('Player', {
+  superClass: 'RectangleShape',
+
+  init: function(t) {
+    this.superInit();
+    this.fill = 'yellow'; // 塗りつぶし色を変更
+    this.x = t.gridX.center();
+    this.y = t.gridY.center();
+    this.width = 64;
+    this.height = 64;
+  },
+
+  update: function() {
+  },
+});
+
+/*
+ * 自機弾クラス
+ */
+phina.define('MyShot', {
+  superClass: 'CircleShape',
+
+  init: function(color) {
+    this.superInit({
+      radius: MY_SHOT_CIRCLE_RADIUS, // 半径
+    });
+    this.vy = MY_SHOT_SPEED;
+  },
+
+  update: function() {
+    this.y -= this.vy;
+  },
+});
+
+/*
+ * 敵クラス
+ */
+phina.define('Enemy', {
+  superClass: 'CircleShape',
+
+  init: function() {
+    this.superInit({
+      radius: ENEMY_CIRCLE_RADIUS, // 半径
+    });
+    this.vy = ENEMY_SPEED;
+  },
+
+  update: function(app) {
+    this.y += this.vy;
+
+    if ((app.frame % 6) < 1) {
+      this.addBullet(this.x, this.y);
+    }
+  },
+
+  // 敵弾を追加
+  addBullet: function(x, y) {
+    var color = "hsla({0}, 75%, 50%, 0.75)".format(Math.randint(0, 360));
+    var bullet = Bullet(color).addChildTo(this.parent.parent.bulletGroup);
+    bullet.setPosition(x, y);
+  },
+});
+
+/*
+ * 敵弾クラス
+ */
+phina.define('Bullet', {
+  superClass: 'CircleShape',
+
+  init: function(color) {
+    this.superInit({
+      radius: BULLET_CIRCLE_RADIUS, // 半径
+    });
+    this.vy = BULLET_SPEED;
+  },
+
+  update: function() {
+    this.y += this.vy;
+  },
+});
+
+
+phina.define('MainScene', {
+  superClass: 'DisplayScene',
+  
+  init: function() {
+    this.superInit();
+    this.backgroundColor = '#222';
+
+    // 自機を初期化
+    var rect = Player(this).addChildTo(this);
+    // 自機として登録
+    this.player = rect;
+
+    // 自機弾グループを追加
+    this.myShotGroup = DisplayElement().addChildTo(this);
+    // 敵グループを追加
+    this.enemyGroup = DisplayElement().addChildTo(this);
+    // 敵弾グループを追加
+    this.bulletGroup = DisplayElement().addChildTo(this);
+  },
+  
+  update: function(app) {
+    var keyboard = app.keyboard;
+    app.gamepadManager.update();
+    var gamepad = app.gamepadManager.get();
+    this.movePlayer(keyboard, gamepad);
+
+    this.addMyShot(this.player.x, this.player.y);
+
+    if ((app.frame % 60) < 1) {
+      this.addEnemy(Math.randint(0, 640), 0);
+    }
+
+    // 当たり判定 自機弾vs敵
+    this.myShotGroup.children.each(function(myShotChild) {
+      this.enemyGroup.children.each(function(enemyChild) {
+        if (enemyChild.hitTestElement(myShotChild)) {
+          // 衝突していたら消去する
+          myShotChild.remove();
+          enemyChild.remove();
+        }
+      }, this);
+    }, this);
+  },
+
+  movePlayer: function(keyboard, gamepad) {
+    // 左右移動
+    if (keyboard.getKey('left') || gamepad.getKey('right')) {
+      this.player.x -= 24;
+      this.player.scale.x = 1;
+    }
+    if (keyboard.getKey('right') || gamepad.getKey('down')) {
+      this.player.x += 24;
+      this.player.scale.x = -1;
+    }
+    // 上下移動
+    if (keyboard.getKey('up') || gamepad.getKey('up')) {
+      this.player.y -= 24;
+    }
+    if (keyboard.getKey('down') || gamepad.getKey('left')) {
+      this.player.y += 24;
+    }
+  },
+
+  // 自機弾を追加
+  addMyShot: function(x, y) {
+    var color = "hsla({0}, 75%, 50%, 0.75)".format(Math.randint(0, 360));
+    var myShot = MyShot(color).addChildTo(this.myShotGroup);
+    myShot.setPosition(x, y);
+  },
+
+  // 敵を追加
+  addEnemy: function(x, y) {
+    var enemy = Enemy().addChildTo(this.enemyGroup);
+    enemy.setPosition(x, y);
+    enemy.t = this;
+  },
+});
+
+phina.main(function() {
+  var app = GameApp({
+    startLabel: 'main'
+  });
+  app.enableStats();
+  app.fps = 60;
+  app.gamepadManager = phina.input.GamepadManager();
+  app.run();
+});
+
+</script>

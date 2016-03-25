@@ -1,0 +1,75 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <title>Circle | phina.js</title>
+  </head>
+  <body>
+  </body>
+</html>
+
+<script src='phina.min.js'></script>
+<script>
+
+phina.globalize();
+
+var BULLET_CIRCLE_RADIUS = 16;
+var BULLET_SPEED = 32;
+
+/*
+ * 敵弾クラス
+ */
+phina.define('Bullet', {
+  superClass: 'CircleShape',
+
+  init: function(color) {
+    this.superInit({
+      radius: BULLET_CIRCLE_RADIUS, // 半径
+    });
+    this.vy = BULLET_SPEED;
+  },
+
+  update: function() {
+    this.y += this.vy;
+  },
+});
+
+
+/*
+ * メインシーン
+ */
+phina.define("MainScene", {
+  superClass: 'DisplayScene',
+
+  // 初期化
+  init: function() {
+    this.superInit();
+    this.backgroundColor = '#222';
+  },
+
+  // update
+  update: function(app) {
+    if ((app.frame % 6) < 1) {
+      this.addBullet(Math.randint(0, 640), 0);
+    }
+  },
+
+  // 敵弾を追加
+  addBullet: function(x, y) {
+    var color = "hsla({0}, 75%, 50%, 0.75)".format(Math.randint(0, 360));
+    var bullet = Bullet(color).addChildTo(this);
+    bullet.setPosition(x, y);
+  },
+});
+
+phina.main(function() {
+  var app = GameApp({
+    startLabel: 'main', // MainScene から開始
+  });
+  app.enableStats();
+  app.fps = 60;
+  app.run();
+});
+
+</script>
