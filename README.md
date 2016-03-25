@@ -14,5 +14,8 @@ http://cat2151.github.io/js2dstg/STG_09_07toGroup.html
 http://cat2151.github.io/js2dstg/STG_10_09to_hitcheck_myshotVsEnemy.html  
 http://cat2151.github.io/js2dstg/STG_11_10to_hitcheck_playerVsBullet_gameOver.html  
 
+# 対応ブラウザ
+chrome推奨。chrome以外だと動作がカクつく可能性があります
+
 # 利用しているphina.jsのバージョン
 phina.js 0.2.0
